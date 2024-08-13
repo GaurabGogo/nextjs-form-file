@@ -1,5 +1,10 @@
-import "@/styles/globals.css";
+import "@/styles/globals.scss";
+import { PrimeReactProvider, PrimeReactContext } from "primereact/api";
 
-export default function App({ Component, pageProps }) {
-  return <Component {...pageProps} />;
+export default function MyApp({ Component, pageProps }) {
+  return (
+    <PrimeReactProvider>
+      <Component {...pageProps} />
+    </PrimeReactProvider>
+  );
 }
