@@ -1,12 +1,25 @@
 import { useForm, Controller } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
-import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
   joinNowValidationSchema,
   joinNowValidationSchema as validationSchema,
 } from "@/lib/validation";
+import { useCallback, useState } from "react";
+import MyDropzone from "./MyDropzone";
+import Image from "next/image";
+import { Button } from "primereact/button";
+import { FaTrash } from "react-icons/fa6";
+import ReactCrop from "react-image-crop";
+import "react-image-crop/src/ReactCrop.scss";
+
+const truncate = (text, maxLength) => {
+  if (text.length > maxLength) {
+    return text.slice(0, maxLength) + "...";
+  }
+  return text;
+};
 
 const cities = [
   { name: "New York", code: "NY" },
@@ -41,8 +54,34 @@ const MyForm = () => {
     resolver: yupResolver(joinNowValidationSchema),
   });
 
-  const onSubmit = (data) => {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+
+  const handleDrop = useCallback((acceptedFiles) => {
+    setFile(acceptedFiles[0]);
+    setPreview(URL.createObjectURL(acceptedFiles[0]));
+  }, []);
+
+  const onSubmit = async (data) => {
     console.log(data);
+    try {
+      const response = await fetch("/api/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Form submitted successfully:", result);
+      } else {
+        console.error("Form submission failed:", response.statusText);
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
   };
 
   return (
@@ -114,7 +153,7 @@ const MyForm = () => {
             <Controller
               name="city"
               control={control}
-              defaultValue=""
+              defaultValue={cities[0]}
               render={({ field }) => (
                 <Dropdown
                   {...field}
@@ -136,7 +175,7 @@ const MyForm = () => {
             <Controller
               name="profession"
               control={control}
-              defaultValue=""
+              defaultValue={professions[0]}
               render={({ field }) => (
                 <Dropdown
                   {...field}
@@ -160,7 +199,7 @@ const MyForm = () => {
             <Controller
               name="ward"
               control={control}
-              defaultValue=""
+              defaultValue={wards[0]}
               render={({ field }) => (
                 <Dropdown
                   {...field}
@@ -198,6 +237,31 @@ const MyForm = () => {
               <small className="p-error">{errors.phone.message}</small>
             )}
           </div>
+          <div className="field-wrapper">
+            <label htmlFor="headshot">Headshot/ Profile Picture</label>
+            {preview ? (
+              <div className="preview-box">
+                <div className="preview-image ">
+                  <Image src={preview} alt="Preview" height={400} width={400} />
+                </div>
+                <div className="preview-actions">
+                  <p title={file.name}>{truncate(file.name, 40)}</p>
+                  <button
+                    className="btn remove-btn"
+                    onClick={() => {
+                      setPreview(null);
+                      setFile(null);
+                    }}
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <MyDropzone onDrop={handleDrop} id="headshot" />
+            )}
+          </div>
+
           <div className="btn-container">
             <Button type="submit" label="Submit" className="btn submit-btn" />
             <p>
