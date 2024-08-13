@@ -2,17 +2,20 @@ import { useForm, Controller } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { yupResolver } from "@hookform/resolvers/yup";
-import {
-  joinNowValidationSchema,
-  joinNowValidationSchema as validationSchema,
-} from "@/lib/validation";
-import { useCallback, useState } from "react";
+import { joinNowValidationSchema } from "@/lib/validation";
+import { useCallback, useRef, useState } from "react";
 import MyDropzone from "./MyDropzone";
 import Image from "next/image";
 import { Button } from "primereact/button";
 import { FaTrash } from "react-icons/fa6";
 import ReactCrop from "react-image-crop";
 import "react-image-crop/src/ReactCrop.scss";
+import AvatarEditor from "react-avatar-editor";
+import { TbPhotoEdit } from "react-icons/tb";
+import { Dialog } from "primereact/dialog";
+import { FaCheckCircle } from "react-icons/fa";
+import { IoMdClose } from "react-icons/io";
+import { Slider } from "primereact/slider";
 
 const truncate = (text, maxLength) => {
   if (text.length > maxLength) {
@@ -25,7 +28,7 @@ const cities = [
   { name: "New York", code: "NY" },
   { name: "Rome", code: "RM" },
   { name: "London", code: "LDN" },
-  { name: "Istanbul", code: "IST" },
+  { name: "I Istanbul", code: "IST" },
   { name: "Paris", code: "PRS" },
 ];
 
@@ -49,28 +52,74 @@ const MyForm = () => {
   const {
     handleSubmit,
     control,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(joinNowValidationSchema),
   });
 
+  const [editorVisible, setEditorVisible] = useState(false);
+  const [scale, setScale] = useState(1);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [croppedImage, setCroppedImage] = useState(null); // State for cropped image
+  const editor = useRef(null);
 
   const handleDrop = useCallback((acceptedFiles) => {
     setFile(acceptedFiles[0]);
     setPreview(URL.createObjectURL(acceptedFiles[0]));
   }, []);
 
+  const handleSave = () => {
+    if (editor.current) {
+      const canvas = editor.current.getImage();
+      const context = canvas.getContext("2d");
+      const width = canvas.width;
+      const height = canvas.height;
+
+      // Create a new canvas with transparency
+      const transparentCanvas = document.createElement("canvas");
+      transparentCanvas.width = width;
+      transparentCanvas.height = height;
+      const transparentContext = transparentCanvas.getContext("2d");
+
+      // Draw a transparent background
+      transparentContext.clearRect(0, 0, width, height);
+
+      // Draw the circular cropped image
+      transparentContext.save();
+      transparentContext.beginPath();
+      transparentContext.arc(width / 2, height / 2, width / 2, 0, 2 * Math.PI);
+      transparentContext.clip();
+      transparentContext.drawImage(canvas, 0, 0);
+      transparentContext.restore();
+
+      // Convert the transparent canvas to a data URL
+      const dataUrl = transparentCanvas.toDataURL();
+      setCroppedImage(dataUrl); // Update the cropped image state
+      setPreview(dataUrl);
+      setEditorVisible(false);
+    }
+  };
+
   const onSubmit = async (data) => {
+    if (!croppedImage && preview) {
+      // Prompt user to crop the image
+      alert("Please crop the image before submitting.");
+      setEditorVisible(true);
+      return;
+    }
+
     console.log(data);
     try {
       const response = await fetch("/api/submit", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          profilePicture: croppedImage || preview,
+        }), // Include croppedImage if available
       });
 
       if (response.ok) {
@@ -83,7 +132,6 @@ const MyForm = () => {
       console.error("An error occurred:", error);
     }
   };
-
   return (
     <section className="section-padding">
       <div className="container">
@@ -241,20 +289,33 @@ const MyForm = () => {
             <label htmlFor="headshot">Headshot/ Profile Picture</label>
             {preview ? (
               <div className="preview-box">
-                <div className="preview-image ">
+                <div className="preview-image">
                   <Image src={preview} alt="Preview" height={400} width={400} />
                 </div>
                 <div className="preview-actions">
                   <p title={file.name}>{truncate(file.name, 40)}</p>
-                  <button
-                    className="btn remove-btn"
-                    onClick={() => {
-                      setPreview(null);
-                      setFile(null);
-                    }}
-                  >
-                    <FaTrash />
-                  </button>
+                  <div className="btn-container">
+                    <button
+                      type="button"
+                      className="btn edit-btn"
+                      onClick={() => {
+                        setEditorVisible(true);
+                      }}
+                    >
+                      <TbPhotoEdit />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn remove-btn"
+                      onClick={() => {
+                        setPreview(null);
+                        setFile(null);
+                        setCroppedImage(null);
+                      }}
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -262,15 +323,55 @@ const MyForm = () => {
             )}
           </div>
 
-          <div className="btn-container">
-            <Button type="submit" label="Submit" className="btn submit-btn" />
-            <p>
-              Do not submit passwords through Airtable forms. Report malicious
-              form
-            </p>
+          <div className="btn-container mt-8">
+            {isSubmitting ? (
+              <Button
+                type="submit"
+                label="Submitting..."
+                className="btn submit-btn"
+                disabled
+              />
+            ) : (
+              <Button type="submit" label="Submit" className="btn submit-btn" />
+            )}
+            <p>Do not submit passwords through forms. Report malicious form.</p>
           </div>
         </form>
       </div>
+      <Dialog visible={editorVisible} onHide={() => setEditorVisible(false)}>
+        {preview && (
+          <>
+            <h4>Crop Image</h4>
+            <AvatarEditor
+              image={preview}
+              width={250}
+              borderRadius={99999}
+              height={250}
+              scale={1 + scale / 100}
+              ref={editor}
+            />
+            <button
+              className="btn close-btn"
+              onClick={() => setEditorVisible(false)}
+            >
+              <IoMdClose />
+            </button>
+            <div className="crop-actions">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={scale}
+                className="slider"
+                onChange={(e) => setScale(e.target.value)}
+              />
+              <button className="btn save-btn" onClick={handleSave}>
+                Save <FaCheckCircle />
+              </button>
+            </div>
+          </>
+        )}
+      </Dialog>
     </section>
   );
 };
