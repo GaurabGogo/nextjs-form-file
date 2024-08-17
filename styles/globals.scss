@@ -39,6 +39,23 @@ body {
   padding: 0 3.2rem;
 }
 
+.box {
+  margin: 1.2rem;
+  width: 100%;
+  height: 100vh;
+  background-color: red;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  color: #fff;
+}
+
+//
+//
+//
+
 .section-padding {
   padding: 4rem 0;
 }
