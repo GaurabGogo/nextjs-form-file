@@ -1,7 +1,7 @@
 import React from "react";
 import Accordion from "@/components/UI/Accordion";
 
-const App = () => {
+const FaqPage = () => {
   const accordionItems = [
     {
       title: "Section 1",
@@ -25,4 +25,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default FaqPage;
