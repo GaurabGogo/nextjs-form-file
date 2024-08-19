@@ -336,7 +336,11 @@ const MyForm = () => {
           </div>
         </form>
       </div>
-      <Dialog visible={editorVisible} onHide={() => setEditorVisible(false)}>
+      <Dialog
+        visible={editorVisible}
+        className="photo-crop-dialog"
+        onHide={() => setEditorVisible(false)}
+      >
         {preview && (
           <>
             <h4>Crop Image</h4>

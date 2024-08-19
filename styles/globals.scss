@@ -39,6 +39,20 @@ body {
   padding: 0 3.2rem;
 }
 
+.download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #007bff;
+  color: #fff;
+  gap: 0.4rem;
+  box-sizing: content-box;
+  padding: 1.2rem;
+  border-radius: 5px;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
 .box {
   margin: 1.2rem;
   width: 100%;
@@ -53,9 +67,187 @@ body {
 }
 
 //
-//
-//
+.download-page-section {
+  .download-page-table {
+    .responsive-table-container {
+      th {
+        font-size: 1.6rem;
+      }
 
+      td {
+        font-size: 1.2rem;
+      }
+    }
+
+    @media screen and (max-width: 600px) {
+      .responsive-table-container {
+        overflow-x: auto;
+      }
+      table,
+      thead,
+      tbody,
+      th,
+      td,
+      tr {
+        display: block;
+      }
+      thead tr {
+        display: none;
+      }
+      tr {
+        margin-bottom: 15px;
+      }
+      td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+      }
+      td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 50%;
+        padding-left: 15px;
+        font-weight: bold;
+        text-align: left;
+      }
+      td,
+      th {
+        width: 100% !important;
+      }
+    }
+  }
+}
+
+.certificate-page-section {
+  .certificate-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(32rem, 1fr));
+    align-items: center;
+    justify-content: center;
+    gap: 3.2rem;
+
+    .certificate-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      h2 {
+        font-size: 1.4rem;
+        color: #6c757d;
+        font-weight: 400;
+      }
+
+      .img-container {
+        margin-top: 0.8rem;
+        width: 100%;
+        height: 100%;
+        background-color: #f9f9f9;
+        outline: 1px solid #ccc;
+        outline-offset: 0.2rem;
+        border-radius: 5px;
+        overflow: hidden;
+        filter: grayscale(60%);
+        transition: all 0.24s ease-in-out;
+        cursor: pointer;
+
+        &:hover {
+          filter: grayscale(0%);
+          box-shadow: 0 0.4rem 1.2rem rgb(0, 123, 255, 0.12);
+        }
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+      }
+    }
+  }
+}
+
+.pdf-dialog {
+  .p-dialog-content {
+    overflow: visible;
+    position: relative;
+
+    .close-btn {
+      position: absolute;
+      top: -2.4rem;
+      right: 0rem;
+      transform: translate(20%, -50%);
+      font-size: 3.2rem;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.24s ease-in-out;
+    }
+
+    .left-nav,
+    .right-nav {
+      position: absolute;
+      top: 50%;
+      transform: translate(0, -50%);
+      font-size: 3.2rem;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.24s ease-in-out;
+
+      &:hover {
+        color: #0056b3;
+      }
+    }
+    .left-nav {
+      left: -8rem;
+    }
+    .right-nav {
+      right: -8rem;
+    }
+
+    .content-container {
+      position: relative;
+      width: 100%;
+      height: 80vh;
+      display: flex;
+      justify-content: center;
+      overflow: scroll;
+
+      iframe {
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      .img-container {
+        width: 100%;
+        height: 100%;
+
+        img {
+          width: 100% !important;
+          height: 100%;
+          object-fit: contain;
+        }
+      }
+    }
+
+    .legend {
+      position: absolute;
+      bottom: -3.2rem;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 1.2rem;
+      font-size: 1.2rem;
+      font-weight: 400;
+      color: #333;
+    }
+
+    p {
+      font-size: 1.2rem;
+      font-weight: 400;
+      color: #333;
+    }
+  }
+}
 .section-padding {
   padding: 4rem 0;
 }
@@ -315,7 +507,7 @@ form {
   }
 }
 
-.p-dialog {
+.photo-crop-dialog {
   background-color: #fff;
   border-radius: 5px;
   padding: 1.2rem;
@@ -379,5 +571,41 @@ form {
 
 .timeline-section {
   .timeline-container {
+  }
+}
+
+.accordion-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+
+  .accordion-item {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+
+    .accordion-title {
+      background-color: rgba(0, 0, 0, 0.03);
+      padding: 1.2rem;
+      cursor: pointer;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      color: #333;
+      align-items: center;
+      h3 {
+        font-size: 1.6rem;
+        font-weight: 600;
+      }
+      span {
+        font-size: 1.6rem;
+        margin-left: auto;
+      }
+    }
+
+    .accordion-content {
+      font-size: 1.4rem;
+      color: #333;
+      font-weight: 400;
+      padding: 10px;
+    }
   }
 }
